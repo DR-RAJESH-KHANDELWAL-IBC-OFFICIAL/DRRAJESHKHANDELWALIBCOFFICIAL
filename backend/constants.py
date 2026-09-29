@@ -1,0 +1,19 @@
+
+"""
+👑 DR RAJESH KHANDELWAL IBC OFFICIAL 👑
+Backend constants for the official identity system.
+"""
+
+BACKEND_NAME = "👑 DR RAJESH KHANDELWAL IBC OFFICIAL 👑"
+
+BACKEND_VERSION = "1.0.0"
+
+BACKEND_STATUS = "active"
+
+DEFAULT_ROLE_STATUS = "active"
+
+ROLE_SUPREME = "SUPREME"
+
+ROLE_ADMIN = "ADMIN"
+
+ROLE_OWNER = "OWNER"
