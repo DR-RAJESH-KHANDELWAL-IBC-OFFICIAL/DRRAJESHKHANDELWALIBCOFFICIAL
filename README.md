@@ -1,16 +1,35 @@
-## Hi there 👋
 
-<!--
-**DRRAJESHKHANDELWALIBCOFFICIAL/DRRAJESHKHANDELWALIBCOFFICIAL** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+# 👑 DR RAJESH KHANDELWAL IBC OFFICIAL 👑
 
-Here are some ideas to get you started:
+## 🌍 Official Identity Application
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+This repository contains the official identity application for DR RAJESH KHANDELWAL IBC OFFICIAL.
+
+### 🚀 Project Details
+
+- **Brand Name:** 👑 DR RAJESH KHANDELWAL IBC OFFICIAL 👑
+- **Application:** Flask-based Identity Application
+- **Status:** ACTIVE
+- **Central Hub Reference:** SUPREMESETUHUB
+
+### 🛠️ Technology Stack
+
+- Python
+- Flask
+- Gunicorn
+
+### 🔗 Available Endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/` | Application identity |
+| `/health` | Health status |
+| `/api/profile` | Brand profile |
+
+### ⚠️ Integration Note
+
+SUPREMESETUHUB is currently a reference label. A live connection has not yet been configured.
+
+---
+
+**👑 DR RAJESH KHANDELWAL IBC OFFICIAL 👑**
