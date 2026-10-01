@@ -31,15 +31,9 @@ SUPREME_API_URL = (
 # ============================================================
 # SUPREME CENTRAL FRONTEND
 # ============================================================
-# No HTML/CSS duplication.
+# LIVE FRONTEND IS SERVED FROM SUPREMESETUHUB
 #
-# Frontend is served directly from:
-#
-# SUPREMESETUHUB
-#       ↓
-# /api/v1/frontend/supreme
-#
-# DRRAJESHKHANDELWALIBCOFFICIAL receives it live.
+# No local HTML/CSS duplication.
 # ============================================================
 
 SUPREME_FRONTEND_URL = (
@@ -49,19 +43,49 @@ SUPREME_FRONTEND_URL = (
 
 
 # ============================================================
+# HTTP SETTINGS
+# ============================================================
+
+REQUEST_TIMEOUT = (
+    60,
+    60,
+)
+
+REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 "
+        "(Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 "
+        "(KHTML, like Gecko) "
+        "Chrome/154.0.0.0 Safari/537.36"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,"
+        "application/xml;q=0.9,*/*;q=0.8"
+    ),
+}
+
+
+# ============================================================
 # CORS
 # ============================================================
 
 @app.after_request
 def after_request(response):
 
-    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers[
+        "Access-Control-Allow-Origin"
+    ] = "*"
 
-    response.headers["Access-Control-Allow-Headers"] = (
+    response.headers[
+        "Access-Control-Allow-Headers"
+    ] = (
         "Content-Type,Authorization"
     )
 
-    response.headers["Access-Control-Allow-Methods"] = (
+    response.headers[
+        "Access-Control-Allow-Methods"
+    ] = (
         "GET,PUT,POST,DELETE,OPTIONS"
     )
 
@@ -71,11 +95,10 @@ def after_request(response):
 # ============================================================
 # HOME PAGE
 # ============================================================
+# The home page loads the LIVE SUPREMESETUHUB frontend.
+#
 # IMPORTANT:
-#
-# The home page loads the LIVE SUPREME frontend.
-#
-# It does NOT return the connection JSON.
+# The connection JSON is NOT returned from "/".
 # ============================================================
 
 @app.get("/")
@@ -85,24 +108,56 @@ def root():
 
         response = requests.get(
             SUPREME_FRONTEND_URL,
-            timeout=30,
+            headers=REQUEST_HEADERS,
+            timeout=REQUEST_TIMEOUT,
+            allow_redirects=True,
+        )
+
+        content_type = response.headers.get(
+            "Content-Type",
+            "text/html; charset=utf-8",
         )
 
         return Response(
             response.content,
             status=response.status_code,
-            content_type=response.headers.get(
-                "Content-Type",
-                "text/html; charset=utf-8",
-            ),
+            content_type=content_type,
         )
+
+    except requests.exceptions.Timeout:
+
+        return jsonify({
+            "success": False,
+            "error": "SUPREME_FRONTEND_TIMEOUT",
+            "message": (
+                "SUPREMESETUHUB frontend "
+                "did not respond within the timeout."
+            ),
+            "frontend_source": (
+                SUPREME_FRONTEND_URL
+            ),
+        }), 502
+
+    except requests.exceptions.ConnectionError as exc:
+
+        return jsonify({
+            "success": False,
+            "error": "SUPREME_FRONTEND_CONNECTION_ERROR",
+            "message": str(exc),
+            "frontend_source": (
+                SUPREME_FRONTEND_URL
+            ),
+        }), 502
 
     except requests.RequestException as exc:
 
         return jsonify({
-            "error": "SUPREME frontend unavailable",
+            "success": False,
+            "error": "SUPREME_FRONTEND_REQUEST_ERROR",
             "message": str(exc),
-            "supreme_frontend": SUPREME_FRONTEND_URL,
+            "frontend_source": (
+                SUPREME_FRONTEND_URL
+            ),
         }), 502
 
 
@@ -137,6 +192,37 @@ def health():
 
 
 # ============================================================
+# SUPREME CONNECTION
+# ============================================================
+# This endpoint is ONLY for connection information.
+#
+# It is intentionally separate from "/".
+# ============================================================
+
+@app.get("/supreme/connection")
+def supreme_connection():
+
+    return jsonify({
+
+        "connected_to": (
+            "SUPREMESETUHUB"
+        ),
+
+        "identity": (
+            "👑 DR RAJESH KHANDELWAL IBC 👑"
+        ),
+
+        "message": (
+            "👑 DR RAJESH KHANDELWAL IBC "
+            "- Supreme Identity Profile 👑"
+        ),
+
+        "status": "ACTIVE",
+
+    }), 200
+
+
+# ============================================================
 # SUPREME BRIDGE
 # ============================================================
 
@@ -151,7 +237,9 @@ def call_supreme(endpoint: str):
 
         response = requests.get(
             url,
-            timeout=15,
+            headers=REQUEST_HEADERS,
+            timeout=(15, 30),
+            allow_redirects=True,
         )
 
         try:
@@ -171,7 +259,16 @@ def call_supreme(endpoint: str):
                     response.status_code
                 ),
 
-                "text": response.text[:1000],
+                "content_type": (
+                    response.headers.get(
+                        "Content-Type",
+                        ""
+                    )
+                ),
+
+                "text": (
+                    response.text[:2000]
+                ),
 
             }
 
@@ -180,13 +277,44 @@ def call_supreme(endpoint: str):
             payload,
         )
 
+    except requests.exceptions.Timeout:
+
+        return (
+            504,
+            {
+                "error": (
+                    "SUPREME request timeout"
+                ),
+                "upstream": (
+                    SUPREME_API_URL
+                ),
+            },
+        )
+
+    except requests.exceptions.ConnectionError as exc:
+
+        return (
+            502,
+            {
+                "error": (
+                    "SUPREME connection error"
+                ),
+                "message": str(exc),
+                "upstream": (
+                    SUPREME_API_URL
+                ),
+            },
+        )
+
     except requests.RequestException as exc:
 
         return (
-            500,
+            502,
             {
                 "error": str(exc),
-                "upstream": SUPREME_API_URL,
+                "upstream": (
+                    SUPREME_API_URL
+                ),
             },
         )
 
@@ -262,7 +390,9 @@ def bridge_search():
     if not query:
 
         return jsonify({
-            "error": "Missing q parameter",
+            "error": (
+                "Missing q parameter"
+            ),
         }), 400
 
     encoded_query = quote(
@@ -290,40 +420,6 @@ def bridge_search():
         "results": payload,
 
     }), status_code
-
-
-# ============================================================
-# SUPREME CONNECTION
-# ============================================================
-# This endpoint contains the identity connection.
-#
-# IMPORTANT:
-# It is separate from "/".
-# Therefore the home page continues to serve
-# the live SUPREME frontend.
-# ============================================================
-
-@app.get("/supreme/connection")
-def supreme_connection():
-
-    return jsonify({
-
-        "connected_to": (
-            "SUPREMESETUHUB"
-        ),
-
-        "identity": (
-            "👑 DR RAJESH KHANDELWAL IBC 👑"
-        ),
-
-        "message": (
-            "👑 DR RAJESH KHANDELWAL IBC "
-            "- Supreme Identity Profile 👑"
-        ),
-
-        "status": "ACTIVE",
-
-    }), 200
 
 
 # ============================================================
